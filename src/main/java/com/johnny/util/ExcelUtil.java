@@ -24,6 +24,8 @@ import jxl.write.biff.RowsExceededException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.johnny.domain.dto.ExportDto;
+
 /**
  *    
  * 类名称：ExcelUtil    
@@ -275,6 +277,152 @@ public class ExcelUtil {
 			workbook.write();
 			ws = null;
 			list = null;
+		} catch (IOException e) {
+			log.error("异常信息：", e);
+		} catch (Exception e) {
+			log.error("异常信息：", e);
+		} finally {
+			try {
+				if(workbook!=null)workbook.close();
+				if(os!=null)os.close();
+			} catch (WriteException e) {
+				log.error("异常信息：", e);
+			} catch (IOException e) {
+				log.error("异常信息：", e);
+			}
+			workbook = null;
+			os = null;
+		}
+	}
+	
+	/**
+	 * 通用导出方法
+	 * 
+	 * @param response
+	 * @param request
+	 * @param list
+	 *            结果集
+	 * @param xhead 如果标题有编号的,那就在xhead的第一个加"%"占位,没有无需加
+	 *            第一行标题
+	 * @param xheadwidth
+	 *            第一行标题宽度
+	 * @param fileName
+	 *            文件名
+	 * @param title
+	 *            标题(如果有第二行标题如:需添加<br/>换行,如有两列则添加#) 示例:String[] conTitle = new
+	 *            String[] { fileName,:文件名,sheetName:工作薄名称 "<br/>",
+	 *            "制表人:;"+name+";12;1","#","制表日期:;"+workDate+";24;1"};
+	 *            制表人:是标题,name:其值,12是合并到多少列(以";"分割);1:行数
+	 * @param beginRow
+	 *            开始写数据的行数
+	 * @param cells
+	 *            需要合并的行与列,
+	 *            数组格式:String [] cells = new String[]{"0;1;5;1"};
+	 *            0:第一列;2:第二行;5:第六列;2:第二行;
+	 * @author 
+	 * @Create 2012-08-21
+	 */
+	public static void exportJxlExcel(HttpServletRequest request, HttpServletResponse response, ExportDto exportDto) {
+		try {
+			exportDto.setFileName(new String(exportDto.getFileName().getBytes(), "iso8859-1"));
+		} catch (UnsupportedEncodingException e1) {
+			log.error("异常信息：", e1);
+		}
+		int merges=request.getAttribute("merges")!=null?Integer.valueOf(request.getAttribute("merges").toString()):1;
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		String workDate = df.format(new Date());
+		response.addHeader("Content-disposition", "attachment;filename=" + exportDto.getFileName()+workDate + ".xls");
+		response.setContentType("application/vnd.ms-excel;charset=GBK");
+		OutputStream os = null;
+		WritableWorkbook workbook = null;
+		try {
+			os = response.getOutputStream();
+			workbook = Workbook.createWorkbook(os);
+			WritableSheet ws = workbook.createSheet(exportDto.getTitle()[1], 0);
+			WritableCellFormat wcfmat = ExcelUtil.nameStytle();
+			WritableFont wfont = new WritableFont(WritableFont.createFont("宋体"), 12,
+					WritableFont.NO_BOLD, false);
+			WritableCellFormat wcfmatTitle = new WritableCellFormat(wfont);
+			wcfmatTitle.setBorder(Border.ALL, BorderLineStyle.THIN, Colour.BLACK);// 设置表格的边框指定为黑色
+			wcfmatTitle.setVerticalAlignment(jxl.format.VerticalAlignment.CENTRE);// 垂直方向居中
+			Integer tempColumn = null;
+			for (int i = 0; i < exportDto.getTitle().length; i++) {
+				if (i == 0 && !"".equals(exportDto.getTitle()[i])) {
+					ws.addCell(new jxl.write.Label(i, i, exportDto.getTitle()[i], wcfmat));
+					ws.setColumnView(i, 100);
+					ws.setRowView(i, 1000);
+					ws.mergeCells(0, 0, exportDto.getXhead().length - merges, 0);
+				}
+				if ("<br/>".equals(exportDto.getTitle()[i])) {
+					i++;
+					String tempTile = exportDto.getTitle()[i];
+					String[] titleArray = tempTile.split(";");
+					ws.addCell(new jxl.write.Label(0, Integer.parseInt(titleArray[3]), titleArray[0] + titleArray[1],
+									wcfmatTitle));
+					tempColumn = Integer.parseInt(titleArray[2]) + 1;
+				} else if ("#".equals(exportDto.getTitle()[i])) {
+					String tempTile = exportDto.getTitle()[i + 1];
+					String[] titleArray = tempTile.split(";");
+					ws.addCell(new jxl.write.Label(tempColumn, Integer.parseInt(titleArray[3]), titleArray[0] + titleArray[1],
+							wcfmatTitle));
+					tempColumn = Integer.parseInt(titleArray[2]) + 1;
+				}
+			}
+			WritableCellFormat wcfmtTitle = ExcelUtil.titleStytle();
+			WritableCellFormat wcfmtContent = ExcelUtil.contentStytle();
+			for (int i = 0; i < exportDto.getXhead().length; i++) {
+				if ("%".equals(exportDto.getXhead()[i])) {
+					ws.addCell(new jxl.write.Label(i, exportDto.getBeginRow()-1, "编号", wcfmtTitle));
+				} else {
+					int count = exportDto.getXhead()[i].indexOf(";");
+					if(count > 0){
+						String [] st = exportDto.getXhead()[i].split(";");
+						ws.addCell(new jxl.write.Label(Integer.parseInt(st[1]), Integer.parseInt(st[2]), st[0], wcfmtTitle));
+					}else{
+						ws.addCell(new jxl.write.Label(i, exportDto.getBeginRow()-1, exportDto.getXhead()[i], wcfmtTitle));
+					}
+				}
+				ws.setColumnView(i, exportDto.getXheadwidth()[i]);
+			}
+			ExcelUtil.mergeCells(exportDto.getCells(), ws);
+			jxl.write.Label label = null;
+			String value = "";
+			if(null != exportDto.getList() && exportDto.getList().size()>0){
+				for (int c = 0; c < exportDto.getList().size(); c++) {
+					Class classType = exportDto.getList().get(c).getClass();
+					Object[] table = new Object[exportDto.getColumnList().size()]; 
+					for (int t = 0; t < exportDto.getColumnList().size(); t++) {
+//						Field field = classType.getDeclaredField(str);
+						table[t] = ReflectionUtils.getFieldValue(exportDto.getList().get(c), exportDto.getColumnList().get(t));
+						//格式化时间为2015-10-23
+//						if(table[t] != null){
+//							if(table[t] instanceof Date){
+//								table[t] = DateTools.format((Date)table[t], DateTools.DATE_FORMAT_10);
+//							}
+//						}
+					}
+//					Object[] table = (Object[]) exportDto.getList().get(c);
+					for (int i = 0, j = 0; i < exportDto.getXhead().length-merges+1; i++) {
+						if ("%".equals(exportDto.getXhead()[i])) {
+							if (i == 0) {
+								value = String.valueOf(c + 1);
+								label = new jxl.write.Label(i, c + exportDto.getBeginRow(), value, wcfmtContent);
+								ws.addCell(label);
+								label = null;
+							}
+						} else {
+							value = table[j] == null ? "" : String.valueOf(table[j]);
+							label = new jxl.write.Label(i, c + exportDto.getBeginRow(), value, wcfmtContent);
+							ws.addCell(label);
+							j++;
+							label = null;
+						}
+					}
+				}
+			}
+			workbook.write();
+			ws = null;
+			exportDto.setList(null);
 		} catch (IOException e) {
 			log.error("异常信息：", e);
 		} catch (Exception e) {
