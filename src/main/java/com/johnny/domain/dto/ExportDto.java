@@ -1,6 +1,7 @@
 package com.johnny.domain.dto;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 导出DTO
@@ -9,6 +10,11 @@ import java.util.List;
  * 2015年10月23日
  */
 public class ExportDto {
+	
+	/**
+	 * 导出数据类型
+	 */
+	public static final String EXPORT_DATA_TYPE_DATE = "DATE";
 	
 	/**
 	 * 数据集合
@@ -46,9 +52,15 @@ public class ExportDto {
 	private String [] cells;
 	
 	/**
-	 * 需要导出字段名称集合
+	 * 字段名称集合
 	 */
 	private List<String> columnList;
+	
+	/**
+	 * 需要特殊处理的字段
+	 * key:字段名称,value:类型
+	 */
+	private Map<String,Map<String,Object>> specialColMap;
 
 	public List<?> getList() {
 		return list;
@@ -114,4 +126,11 @@ public class ExportDto {
 		this.columnList = columnList;
 	}
 
+	public Map<String, Map<String, Object>> getSpecialColMap() {
+		return specialColMap;
+	}
+
+	public void setSpecialColMap(Map<String, Map<String, Object>> specialColMap) {
+		this.specialColMap = specialColMap;
+	}
 }

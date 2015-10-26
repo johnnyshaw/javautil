@@ -1,11 +1,14 @@
 package com.johnny.util;
 
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,13 +30,11 @@ import org.apache.commons.logging.LogFactory;
 import com.johnny.domain.dto.ExportDto;
 
 /**
- *    
- * 类名称：ExcelUtil    
- * 类描述：通用导出工具类    
- * 创建时间：2012-08-21    
- * @version   1.0
- * @author Johnny
+ * 
+ * 通用导出工具类 
+ * @author xiaobao
  *
+ * 2015年10月23日
  */
 public class ExcelUtil {
 	
@@ -193,7 +194,6 @@ public class ExcelUtil {
 		} catch (UnsupportedEncodingException e1) {
 			log.error("异常信息：", e1);
 		}
-		System.out.println(request.getAttribute("merges")+"....");
 		int merges=request.getAttribute("merges")!=null?Integer.valueOf(request.getAttribute("merges").toString()):1;
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 		String workDate = df.format(new Date());
@@ -394,12 +394,25 @@ public class ExcelUtil {
 					for (int t = 0; t < exportDto.getColumnList().size(); t++) {
 //						Field field = classType.getDeclaredField(str);
 						table[t] = ReflectionUtils.getFieldValue(exportDto.getList().get(c), exportDto.getColumnList().get(t));
-						//格式化时间为2015-10-23
-//						if(table[t] != null){
-//							if(table[t] instanceof Date){
-//								table[t] = DateTools.format((Date)table[t], DateTools.DATE_FORMAT_10);
-//							}
+						//如果有需要特殊处理的字段
+//						if(exportDto.getSpecialColMap().containsKey(exportDto.getColumnList().get(t))){
+//							Map<String,Object> specialColMap = exportDto.getSpecialColMap().get(exportDto.getColumnList().get(t));
 //						}
+						if(table[t] != null){
+							if(exportDto.getSpecialColMap() != null && exportDto.getSpecialColMap().containsKey(exportDto.getColumnList().get(t))){
+								Map<String,Object> map = exportDto.getSpecialColMap().get(exportDto.getColumnList().get(t));
+								if(map.containsKey(ExportDto.EXPORT_DATA_TYPE_DATE)){
+									if(map.get(ExportDto.EXPORT_DATA_TYPE_DATE)!=null){
+										SimpleDateFormat sdf = new SimpleDateFormat(String.valueOf(map.get(ExportDto.EXPORT_DATA_TYPE_DATE)));
+										table[t] = sdf.format(table[t]);
+									}
+								}
+							}else{
+								if(table[t] instanceof Date){
+									table[t] = DateTools.format((Date)table[t], DateTools.DATE_FORMAT_10);
+								}
+							}
+						}
 					}
 //					Object[] table = (Object[]) exportDto.getList().get(c);
 					for (int i = 0, j = 0; i < exportDto.getXhead().length-merges+1; i++) {
@@ -529,6 +542,17 @@ public class ExcelUtil {
 			log.error("异常信息：", e);
 		} catch (WriteException e) {
 			log.error("异常信息：", e);
+		}
+	}
+	
+	public static void main(String[] args) {
+		List<String> list = new ArrayList<String>();
+		ExportDto exportDto = new ExportDto();
+		list.add("1");
+		list.add("22");
+		exportDto.setList(list);
+		for (int i = 0; i < exportDto.getList().size(); i++) {
+			System.out.println(exportDto.getList().get(i).getClass());
 		}
 	}
 	
