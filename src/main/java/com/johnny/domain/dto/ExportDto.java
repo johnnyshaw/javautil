@@ -12,9 +12,14 @@ import java.util.Map;
 public class ExportDto {
 	
 	/**
-	 * 导出数据类型
+	 * 导出数据类型-时间
 	 */
 	public static final String EXPORT_DATA_TYPE_DATE = "DATE";
+	
+	/**
+	 * 导出数据类型-BigDecimal
+	 */
+	public static final String EXPORT_DATA_TYPE_BIGDECIMAL = "BIGDECIMAL";
 	
 	/**
 	 * 数据集合

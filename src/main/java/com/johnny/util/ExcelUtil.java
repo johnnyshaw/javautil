@@ -1,9 +1,11 @@
 package com.johnny.util;
 
 
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -394,20 +396,26 @@ public class ExcelUtil {
 					for (int t = 0; t < exportDto.getColumnList().size(); t++) {
 //						Field field = classType.getDeclaredField(str);
 						table[t] = ReflectionUtils.getFieldValue(exportDto.getList().get(c), exportDto.getColumnList().get(t));
-						//如果有需要特殊处理的字段
-//						if(exportDto.getSpecialColMap().containsKey(exportDto.getColumnList().get(t))){
-//							Map<String,Object> specialColMap = exportDto.getSpecialColMap().get(exportDto.getColumnList().get(t));
-//						}
 						if(table[t] != null){
+							//判断是否有需要特殊处理的字段map集合
 							if(exportDto.getSpecialColMap() != null && exportDto.getSpecialColMap().containsKey(exportDto.getColumnList().get(t))){
+								//根据字段名称获取
 								Map<String,Object> map = exportDto.getSpecialColMap().get(exportDto.getColumnList().get(t));
-								if(map.containsKey(ExportDto.EXPORT_DATA_TYPE_DATE)){
-									if(map.get(ExportDto.EXPORT_DATA_TYPE_DATE)!=null){
-										SimpleDateFormat sdf = new SimpleDateFormat(String.valueOf(map.get(ExportDto.EXPORT_DATA_TYPE_DATE)));
-										table[t] = sdf.format(table[t]);
+								//判断该字段需要特殊处理
+								if(map != null ){
+									//当需要特殊处理的字段为时间类型
+									if(map.containsKey(ExportDto.EXPORT_DATA_TYPE_DATE)){
+										if(map.get(ExportDto.EXPORT_DATA_TYPE_DATE)!=null){
+											SimpleDateFormat sdf = new SimpleDateFormat(String.valueOf(map.get(ExportDto.EXPORT_DATA_TYPE_DATE)));
+											table[t] = sdf.format(table[t]);
+										}
+									}else if(map.containsKey(ExportDto.EXPORT_DATA_TYPE_BIGDECIMAL)){//当需要特殊处理的字段为BigDecimal
+										String temp = String.valueOf(map.get(ExportDto.EXPORT_DATA_TYPE_BIGDECIMAL));
+										table[t] = ((BigDecimal)table[t]).setScale(Integer.valueOf(temp));
 									}
 								}
 							}else{
+								//默认处理时间为yyyy-MM-dd
 								if(table[t] instanceof Date){
 									table[t] = DateTools.format((Date)table[t], DateTools.DATE_FORMAT_10);
 								}
