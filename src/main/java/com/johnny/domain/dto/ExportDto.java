@@ -19,12 +19,14 @@ public class ExportDto {
 		this.fileName = fileName;
 		this.dataList = dataList;
 		this.columnList = columnList;
+		this.beginRow = beginRow;
 	}
 	
 	public ExportDto(String fileName,List<?> dataList,List<String> columnList,int beginRow,boolean hasNo,Map<String,Map<ExportDataType,Object>> specialColMap){
 		this.fileName = fileName;
 		this.dataList = dataList;
 		this.columnList = columnList;
+		this.beginRow = beginRow;
 	}
 	
 	public ExportDto(String fileName, String sheetName,List<?> dataList,List<String> columnList){

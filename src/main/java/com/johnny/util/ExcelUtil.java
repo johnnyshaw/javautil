@@ -522,6 +522,11 @@ public class ExcelUtil {
 								ws.addCell(label);
 								label = null;
 							}
+						} else {
+							value = table[t] == null ? "" : String.valueOf(table[t]);
+							label = new jxl.write.Label(t, c + beginRow, value, wcfmtContent);
+							ws.addCell(label);
+							label = null;
 						}
 					}
 //					Object[] table = (Object[]) exportDto.getList().get(c);
