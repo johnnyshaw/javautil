@@ -1,5 +1,6 @@
 package com.johnny.domain.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +12,7 @@ import java.util.Map;
  */
 public class ExportDto {
 	
-public ExportDto(){
+	public ExportDto(){
 		
 	}
 	
@@ -57,10 +58,28 @@ public ExportDto(){
 	 * @param columnList 需要导出的字段名称
 	 * @param beginRow 开始行数
 	 * @param specialColMap 需要特殊处理的字段名称
+	 * @param xheads 表格头部
+	 * @param headWidth 表格头部宽度
+	 */
+	public ExportDto(String fileName,List<?> dataList,List<String> columnList,int beginRow,Map<String,Map<ExportDataType,Object>> specialColMap,String[] xheads,int headWidth){
+		this.fileName = fileName;
+		this.dataList = dataList;
+		this.columnList = columnList;
+		this.beginRow = beginRow;
+		this.headsList = this.initHeadList(xheads, headWidth);
+	}
+	
+	/**
+	 * 构造方法
+	 * @param fileName 文件名称
+	 * @param dataList 数据集合
+	 * @param columnList 需要导出的字段名称
+	 * @param beginRow 开始行数
+	 * @param specialColMap 需要特殊处理的字段名称
 	 */
 	
 	/**
-	 * 
+	 * 构造方法
 	 * @param fileName 文件名称
 	 * @param dataList 数据集合
 	 * @param columnList 需要导出的字段名称
@@ -78,7 +97,7 @@ public ExportDto(){
 	}
 	
 	/**
-	 * 
+	 * 构造方法
 	 * @param fileName 文件名称
 	 * @param sheetName 工作薄名称
 	 * @param dataList 数据集合
@@ -92,7 +111,7 @@ public ExportDto(){
 	}
 	
 	/**
-	 * 
+	 * 构造方法
 	 * @param fileName 文件名称
 	 * @param sheetName 工作薄名称
 	 * @param dataList 数据集合
@@ -107,6 +126,39 @@ public ExportDto(){
 		this.titleList = titleList;
 		this.headsList = headsList;
 		this.columnList = columnList;
+	}
+	
+	/**
+	 * 初始化
+	 * @param fileName 文件名称
+	 * @param dataList 数据集合
+	 * @param columnList
+	 * @param beginRow 开始行数
+	 * @param specialColMap 需要特殊处理的字段
+	 * @param xheads 表头数组
+	 * @param headWidth 表头宽度
+	 * @return
+	 */
+	public ExportDto init(String fileName,List<?> dataList,List<String> columnList,int beginRow,
+						Map<String,Map<ExportDataType,Object>> specialColMap,String[] xheads,int headWidth){
+		return new ExportDto(fileName, dataList, columnList, beginRow, specialColMap, xheads, headWidth);
+	}
+	
+	/**
+	 * 初始化表格头部标题集合,该方法仅限统一宽度的标题,为简化操作而生
+	 * 不适用于复杂设置,复杂设置需要使用构造方法设置
+	 * @param xheads 表头名称
+	 * @param headWidth 表格统一宽度
+	 * @return
+	 */
+	public List<ExportHeads> initHeadList(String [] xheads,int headWidth){
+		ExportDto exportDto = new ExportDto();
+		List<ExportHeads> exportHeadsList = new ArrayList<ExportDto.ExportHeads>();
+		for (String head : xheads) {
+			ExportHeads exportHeads = exportDto.new ExportHeads(head,headWidth);
+			exportHeadsList.add(exportHeads);
+		}
+		return exportHeadsList;
 	}
 	
 	/**
@@ -194,6 +246,30 @@ public ExportDto(){
 			this.mergeRowNum = mergeRowNum;
 			this.rowHeight = rowHeight;
 			this.colWidth = colWidth;
+		}
+		
+		/**
+		 * 初始化字段
+		 * @param titleName  表格标题名称
+		 * @param titleRowNum 表格标题列号
+		 * @param titleColNum 表格标题行号
+		 */
+		public ExportTitle init(String titleName,int titleColNum,int titleRowNum){
+			return new ExportTitle(titleName, titleColNum, titleRowNum);
+		}
+		
+		/**
+		 * 初始化字段
+		 * @param titleName  表格标题名称
+		 * @param titleRowNum 表格标题列号
+		 * @param titleColNum 表格标题行号
+		 * @param mergeColNum 标题需要合并到的列号
+		 * @param mergeRowNum 标题需要合并到的行号
+		 * @param rowHeight 标题行高
+		 * @param rowHeight 标题列宽
+		 */
+		public ExportTitle init(String titleName,int titleColNum,int titleRowNum,int mergeColNum,int mergeRowNum,int rowHeight,int colWidth){
+			return new ExportTitle(titleName, titleColNum, titleRowNum, mergeColNum, mergeRowNum, rowHeight, colWidth);
 		}
 		
 		/**
@@ -342,17 +418,39 @@ public ExportDto(){
 		}
 		
 		/**
-		 * 初始化头部
-		 * @param headName
-		 * @param headWidth
+		 * 初始化表格头部
+		 * 默认头部行高1000,,默认不需要跨行跨列
+		 * @param headName 头部名称
+		 * @param headWidth 头部宽度
 		 * @return
 		 */
 		public ExportHeads init(String headName,int headWidth){
-			return new ExportHeads(headName, headWidth, 1000, hasHeadMerge, 0, 0);
+			return new ExportHeads(headName, headWidth, 1000, false, 0, 0);
 		}
 		
-		public ExportHeads init(String headName,int headWidth,boolean hasHeadMerge,int headColNum, int headRowNum){
-			return new ExportHeads(headName, headWidth, 1000, hasHeadMerge, 0, 0);
+		/**
+		 * 初始化表格头部
+		 * 默认不需要跨行跨列
+		 * @param headName 头部名称
+		 * @param headWidth 头部宽度
+		 * @param headRowHeight 头部行高
+		 * @return
+		 */
+		public ExportHeads init(String headName,int headWidth,int headRowHeight){
+			return new ExportHeads(headName, headWidth, headRowHeight, false, 0, 0);
+		}
+		
+		/**
+		 * 初始化表格头部
+		 * @param headName 头部名称
+		 * @param headWidth 头部宽度
+		 * @param headRowHeight 头部行高
+		 * @param headColNum 头部跨行
+		 * @param headRowNum 头部跨列
+		 * @return
+		 */
+		public ExportHeads init(String headName,int headWidth,int headRowHeight,int headColNum, int headRowNum){
+			return new ExportHeads(headName, headWidth, headRowHeight, true, headColNum, headRowNum);
 		}
 		
 		/**
