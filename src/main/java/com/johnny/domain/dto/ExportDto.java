@@ -11,10 +11,38 @@ import java.util.Map;
  */
 public class ExportDto {
 	
-	public ExportDto(){
+public ExportDto(){
 		
 	}
 	
+	/**
+	 * 构造方法
+	 * @param fileName 文件名称
+	 * @param dataList 数据集合
+	 * @param columnList 需要导出的字段名称
+	 * @param beginRow 开始行数
+	 * @param specialColMap 需要特殊处理的字段名称
+	 * @param titleList 标题集合
+	 * @param headsList 表格头部集合
+	 */
+	public ExportDto(String fileName,List<?> dataList,List<String> columnList,int beginRow,
+			Map<String,Map<ExportDataType,Object>> specialColMap,List<ExportTitle> titleList,List<ExportHeads> headsList){
+		this.fileName = fileName;
+		this.dataList = dataList;
+		this.columnList = columnList;
+		this.beginRow = beginRow;
+		this.titleList = titleList;
+		this.headsList = headsList;
+	}
+	
+	/**
+	 * 构造方法
+	 * @param fileName 文件名称
+	 * @param dataList 数据集合
+	 * @param columnList 需要导出的字段名称
+	 * @param beginRow 开始行数
+	 * @param specialColMap 需要特殊处理的字段名称
+	 */
 	public ExportDto(String fileName,List<?> dataList,List<String> columnList,int beginRow,Map<String,Map<ExportDataType,Object>> specialColMap){
 		this.fileName = fileName;
 		this.dataList = dataList;
@@ -22,13 +50,40 @@ public class ExportDto {
 		this.beginRow = beginRow;
 	}
 	
+	/**
+	 * 构造方法
+	 * @param fileName 文件名称
+	 * @param dataList 数据集合
+	 * @param columnList 需要导出的字段名称
+	 * @param beginRow 开始行数
+	 * @param specialColMap 需要特殊处理的字段名称
+	 */
+	
+	/**
+	 * 
+	 * @param fileName 文件名称
+	 * @param dataList 数据集合
+	 * @param columnList 需要导出的字段名称
+	 * @param beginRow 开始行数
+	 * @param hasNo 是否需要编号列
+	 * @param specialColMap 需要特殊处理的字段名称
+	 */
 	public ExportDto(String fileName,List<?> dataList,List<String> columnList,int beginRow,boolean hasNo,Map<String,Map<ExportDataType,Object>> specialColMap){
 		this.fileName = fileName;
 		this.dataList = dataList;
 		this.columnList = columnList;
 		this.beginRow = beginRow;
+		this.hasNo = hasNo;
+		this.specialColMap = specialColMap;
 	}
 	
+	/**
+	 * 
+	 * @param fileName 文件名称
+	 * @param sheetName 工作薄名称
+	 * @param dataList 数据集合
+	 * @param columnList 需要导出的字段名称
+	 */
 	public ExportDto(String fileName, String sheetName,List<?> dataList,List<String> columnList){
 		this.fileName = fileName;
 		this.sheetName = sheetName;
@@ -36,6 +91,15 @@ public class ExportDto {
 		this.columnList = columnList;
 	}
 	
+	/**
+	 * 
+	 * @param fileName 文件名称
+	 * @param sheetName 工作薄名称
+	 * @param dataList 数据集合
+	 * @param titleList 列标题
+	 * @param headsList 头部集合
+	 * @param columnList 列集合
+	 */
 	public ExportDto(String fileName, String sheetName,List<?> dataList,List<ExportTitle> titleList,List<ExportHeads> headsList,List<String> columnList){
 		this.fileName = fileName;
 		this.sheetName = sheetName;
@@ -277,6 +341,12 @@ public class ExportDto {
 			this.headRowNum = headRowNum;
 		}
 		
+		/**
+		 * 初始化头部
+		 * @param headName
+		 * @param headWidth
+		 * @return
+		 */
 		public ExportHeads init(String headName,int headWidth){
 			return new ExportHeads(headName, headWidth, 1000, hasHeadMerge, 0, 0);
 		}
