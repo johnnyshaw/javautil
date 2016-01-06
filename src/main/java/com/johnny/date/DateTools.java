@@ -1,4 +1,4 @@
-package com.johnny.util;
+package com.johnny.date;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;

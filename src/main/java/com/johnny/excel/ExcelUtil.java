@@ -1,4 +1,4 @@
-package com.johnny.util;
+package com.johnny.excel;
 
 
 import java.io.IOException;
@@ -28,15 +28,17 @@ import jxl.write.biff.RowsExceededException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.johnny.date.DateTools;
 import com.johnny.domain.dto.ExportDto;
 import com.johnny.domain.dto.ExportDto.ExportDataType;
 import com.johnny.domain.dto.ExportDto.ExportHeads;
 import com.johnny.domain.dto.ExportDto.ExportTitle;
+import com.johnny.util.ReflectionUtils;
 
 
 /**
  * 
- * 通用导出工具类 
+ * 通用导出工具类 JXL包基础上开发
  * @author xiaobao
  *
  * 2015年10月23日
