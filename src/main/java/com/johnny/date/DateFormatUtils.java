@@ -1,4 +1,4 @@
-package com.johnny.util;
+package com.johnny.date;
 
 import java.text.DateFormat;
 import java.util.Date;

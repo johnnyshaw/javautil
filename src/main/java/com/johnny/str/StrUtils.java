@@ -1,4 +1,4 @@
-package com.johnny.util;
+package com.johnny.str;
 
 import java.util.regex.Pattern;
 

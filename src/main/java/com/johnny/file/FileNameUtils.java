@@ -6,7 +6,7 @@ import java.util.Date;
 
 import org.apache.commons.lang.RandomStringUtils;
 
-import com.johnny.util.Num62;
+import com.johnny.numtool.Num62;
 
 /**
  * 文件名生成帮助类

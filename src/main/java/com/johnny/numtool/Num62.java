@@ -1,4 +1,4 @@
-package com.johnny.util;
+package com.johnny.numtool;
 
 /**
  * 62进制数字

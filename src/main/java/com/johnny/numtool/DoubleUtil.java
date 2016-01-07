@@ -1,4 +1,4 @@
-package com.johnny.util;
+package com.johnny.numtool;
 
 import java.math.BigDecimal;
 import java.math.MathContext;

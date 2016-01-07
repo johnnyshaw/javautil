@@ -1,4 +1,4 @@
-package com.johnny.util;
+package com.johnny.url;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;

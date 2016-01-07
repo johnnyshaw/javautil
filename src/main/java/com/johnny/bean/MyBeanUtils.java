@@ -1,4 +1,4 @@
-package com.johnny.util;
+package com.johnny.bean;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

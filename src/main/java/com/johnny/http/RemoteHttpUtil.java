@@ -119,7 +119,7 @@ public class RemoteHttpUtil {
 				return null;
 			}
 		} catch (Exception e) {
-			logger.error("访问信贷工厂服务异常BY-KV", e);
+			logger.error("访问服务异常BY-KV", e);
 			return null;
 		} finally {
 			if (post != null) {

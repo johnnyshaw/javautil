@@ -1,4 +1,4 @@
-package com.johnny.util;
+package com.johnny.bean;
 
 import org.apache.commons.beanutils.PropertyUtils;
 

@@ -10,7 +10,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.johnny.util.Num62;
+import com.johnny.numtool.Num62;
 
 public class UploadUtils {
 	/**
