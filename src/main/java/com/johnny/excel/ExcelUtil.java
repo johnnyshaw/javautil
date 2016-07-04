@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -338,7 +339,7 @@ public class ExcelUtil {
 		int merges=request.getAttribute("merges")!=null?Integer.valueOf(request.getAttribute("merges").toString()):1;
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 		String workDate = df.format(new Date());
-		response.addHeader("Content-disposition", "attachment;filename=" + exportDto.getFileName()+workDate + ".xls");
+		response.setHeader("Content-disposition", "attachment;filename=" + exportDto.getFileName()+workDate + ".xls");
 		response.setContentType("application/vnd.ms-excel;charset=GBK");
 		OutputStream os = null;
 		WritableWorkbook workbook = null;
@@ -357,71 +358,48 @@ public class ExcelUtil {
 			WritableCellFormat wcfmatTitle = new WritableCellFormat(wfont);
 			wcfmatTitle.setBorder(Border.ALL, BorderLineStyle.THIN, Colour.BLACK);// 设置表格的边框指定为黑色
 			wcfmatTitle.setVerticalAlignment(jxl.format.VerticalAlignment.CENTRE);// 垂直方向居中
-			//TODO 原来处理标题方式,等下需要删除BEGIN
-//			Integer tempColumn = null;
-//			for (int i = 0; i < exportDto.getTitle().length; i++) {
-//				if (i == 0 && !"".equals(exportDto.getTitle()[i])) {
-//					ws.addCell(new jxl.write.Label(i, i, exportDto.getFileName(), wcfmat));
-//					ws.setColumnView(i, 100);
-//					ws.setRowView(i, 1000);
-//					ws.mergeCells(0, 0, exportDto.getHeadsList().size() - merges, 0);
-//				}
-//				if ("<br/>".equals(exportDto.getTitle()[i])) {
-//					i++;
-//					String tempTile = exportDto.getTitle()[i];
-//					String[] titleArray = tempTile.split(";");
-//					ws.addCell(new jxl.write.Label(0, Integer.parseInt(titleArray[3]), titleArray[0] + titleArray[1],
-//									wcfmatTitle));
-//					tempColumn = Integer.parseInt(titleArray[2]) + 1;
-//				} else if ("#".equals(exportDto.getTitle()[i])) {
-//					String tempTile = exportDto.getTitle()[i + 1];
-//					String[] titleArray = tempTile.split(";");
-//					ws.addCell(new jxl.write.Label(tempColumn, Integer.parseInt(titleArray[3]), titleArray[0] + titleArray[1],
-//							wcfmatTitle));
-//					tempColumn = Integer.parseInt(titleArray[2]) + 1;
-//				}
-//			}
-			//TODO 原来处理标题方式,等下需要删除END
-			
 			//处理整个Excel表格标题
 			int titleMergeColNum = 0,titleMergeRowNum = 0;
 //			boolean isTitleMergeRow = false;
-			for (int i = 0; i < exportDto.getTitleList().size(); i++) {
-				ExportTitle exportTitle = exportDto.getTitleList().get(i);
-				ws.addCell(new jxl.write.Label(exportTitle.getTitleColNum(), exportTitle.getTitleRowNum(), exportTitle.getTitleName(), wcfmat));
-				//如果未设置行高,默认设置高度1000
-				if(exportTitle.getRowHeight()==0){
-					ws.setRowView(i, 1000);
-				}else{
-					ws.setRowView(i, exportTitle.getRowHeight());
+			if(exportDto.getTitleList() != null){
+				for (int i = 0; i < exportDto.getTitleList().size(); i++) {
+					ExportTitle exportTitle = exportDto.getTitleList().get(i);
+					ws.addCell(new jxl.write.Label(exportTitle.getTitleColNum(), exportTitle.getTitleRowNum(), exportTitle.getTitleName(), wcfmat));
+					//如果未设置行高,默认设置高度1000
+					if(exportTitle.getRowHeight()==0){
+						ws.setRowView(i, 1000);
+					}else{
+						ws.setRowView(i, exportTitle.getRowHeight());
+					}
+					
+					//如果未设置列宽,默认设置高度100
+					if(exportTitle.getColWidth()==0){
+						ws.setColumnView(i, 100);
+					}else{
+						ws.setColumnView(i, exportTitle.getColWidth());
+					}
+					
+					//如果标题有需要合并的列
+					if(exportTitle.getMergeColNum() != 0){
+						titleMergeColNum = exportTitle.getMergeColNum();
+					}else{	//否则默认为合并所有的表头
+						titleMergeColNum = exportDto.getHeadsList().size() - merges;
+					}
+					//如果标题有需要合并的行
+					if(exportTitle.getMergeRowNum() != 0){
+						titleMergeRowNum = exportTitle.getMergeRowNum();
+						//配合下面数据起始行数使用,如果标题有跨行就必须设置开始行数,否则难以计算,此处非不能计算,而是太麻烦
+//						if(!isTitleMergeRow){
+//							isTitleMergeRow = true;
+//						}
+					}else{	//否则默认当前行
+						titleMergeRowNum = exportTitle.getTitleRowNum();
+					}
+					//合并标题行和列
+					ws.mergeCells(exportTitle.getTitleColNum(), exportTitle.getTitleRowNum(), titleMergeColNum, titleMergeRowNum);
 				}
-				
-				//如果未设置列宽,默认设置高度100
-				if(exportTitle.getColWidth()==0){
-					ws.setColumnView(i, 100);
-				}else{
-					ws.setColumnView(i, exportTitle.getColWidth());
-				}
-				
-				//如果标题有需要合并的列
-				if(exportTitle.getMergeColNum() != 0){
-					titleMergeColNum = exportTitle.getMergeColNum();
-				}else{	//否则默认为合并所有的表头
-					titleMergeColNum = exportDto.getHeadsList().size() - merges;
-				}
-				//如果标题有需要合并的行
-				if(exportTitle.getMergeRowNum() != 0){
-					titleMergeRowNum = exportTitle.getMergeRowNum();
-					//配合下面数据起始行数使用,如果标题有跨行就必须设置开始行数,否则难以计算,此处非不能计算,而是太麻烦
-//					if(!isTitleMergeRow){
-//						isTitleMergeRow = true;
-//					}
-				}else{	//否则默认当前行
-					titleMergeRowNum = exportTitle.getTitleRowNum();
-				}
-				//合并标题行和列
-				ws.mergeCells(exportTitle.getTitleColNum(), exportTitle.getTitleRowNum(), titleMergeColNum, titleMergeRowNum);
 			}
+			
 			
 			WritableCellFormat wcfmtTitle = ExcelUtil.titleStytle();
 			WritableCellFormat wcfmtContent = ExcelUtil.contentStytle();
@@ -434,15 +412,6 @@ public class ExcelUtil {
 			}else{
 				beginRow = exportDto.getBeginRow();
 			}
-//			if(isTitleMergeRow){
-//				throw new Exception("因标题涉及到跨行,所以开始行数[beginRow]不能为空!");
-//			}else{
-//				if(exportDto.getBeginRow() != 0){
-//					beginRow = exportDto.getBeginRow();
-//				}else{	//否则默认为标题行数+1
-//					beginRow = exportDto.getTitleList().size();
-//				}
-//			}
 			//开始处理导出数据列标题集合
 			for (int i = 0; i < exportDto.getHeadsList().size(); i++) {
 				ExportHeads head = exportDto.getHeadsList().get(i);
@@ -453,40 +422,35 @@ public class ExcelUtil {
 					//如果头部需要合并
 					if(head.getHasHeadMerge()){
 						ws.addCell(new jxl.write.Label(head.getHeadColNum(), head.getHeadRowNum(), head.getHeadName(), wcfmtTitle));
+						//合并标题行和列
+						ws.mergeCells(head.getHeadColNum(), head.getHeadRowNum(), head.getMergeColNum(), head.getMergeRowNum());
 					}else{
-						ws.addCell(new jxl.write.Label(i, beginRow-1, head.getHeadName(), wcfmtTitle));
+						if(head.getHeadColNum() == 0 && head.getHeadRowNum() == 0){
+							ws.addCell(new jxl.write.Label(i, beginRow-1, head.getHeadName(), wcfmtTitle));
+						}else{
+							ws.addCell(new jxl.write.Label(head.getHeadColNum(), head.getHeadRowNum(), head.getHeadName(), wcfmtTitle));
+						}
 					}
 				}
 				ws.setColumnView(i, head.getHeadWidth());
 			}
 			
-			//TODO 原来处理表头方式,等下需要删除BEGIN
-//			for (int i = 0; i < exportDto.getXhead().length; i++) {
-//				if ("%".equals(exportDto.getXhead()[i])) {
-//					ws.addCell(new jxl.write.Label(i, exportDto.getBeginRow()-1, "编号", wcfmtTitle));
-//				} else {
-//					int count = exportDto.getXhead()[i].indexOf(";");
-//					if(count > 0){
-//						String [] st = exportDto.getXhead()[i].split(";");
-//						ws.addCell(new jxl.write.Label(Integer.parseInt(st[1]), Integer.parseInt(st[2]), st[0], wcfmtTitle));
-//					}else{
-//						ws.addCell(new jxl.write.Label(i, exportDto.getBeginRow()-1, exportDto.getXhead()[i], wcfmtTitle));
-//					}
-//				}
-//				ws.setColumnView(i, exportDto.getXheadwidth()[i]);
-//			}
-			//TODO 原来处理表头方式,等下需要删除END
-			
 //			ExcelUtil.mergeCells(exportDto.getCells(), ws);
 			jxl.write.Label label = null;
 			String value = "";
 			if(null != exportDto.getDataList() && exportDto.getDataList().size()>0){
+				Object[] countTotal = new Object[exportDto.getColumnList().size()];
 				for (int c = 0; c < exportDto.getDataList().size(); c++) {
 					Class classType = exportDto.getDataList().get(c).getClass();
 					Object[] table = new Object[exportDto.getColumnList().size()]; 
 					for (int t = 0; t < exportDto.getColumnList().size(); t++) {
 //						Field field = classType.getDeclaredField(str);
-						table[t] = ReflectionUtils.getFieldValue(exportDto.getDataList().get(c), exportDto.getColumnList().get(t));
+						if(exportDto.getDataList().get(c) instanceof Map){
+							table[t] = ((Map)exportDto.getDataList().get(c)).get(exportDto.getColumnList().get(t));
+						}else{
+							table[t] = ReflectionUtils.getFieldValue(exportDto.getDataList().get(c), exportDto.getColumnList().get(t));
+						}
+						
 						if(table[t] != null){
 							//判断是否有需要特殊处理的字段map集合
 							if(exportDto.getSpecialColMap() != null && exportDto.getSpecialColMap().containsKey(exportDto.getColumnList().get(t))){
@@ -509,6 +473,9 @@ public class ExcelUtil {
 								//默认处理时间为yyyy-MM-dd
 								if(table[t] instanceof Date){
 									table[t] = DateTools.format((Date)table[t], DateTools.DATE_FORMAT_10);
+								}else if(table[t] instanceof Double){
+									DecimalFormat dataformat = new DecimalFormat("0.00");
+									table[t] = Double.valueOf(dataformat.format(table[t]));
 								}
 							}
 							if (exportDto.getHasNo()){
@@ -519,10 +486,25 @@ public class ExcelUtil {
 									label = null;
 								}
 							} else {
+								//需要合计
+								if(exportDto.isNeedTotal()){
+									if(table[t] instanceof Integer){
+										int result = Integer.valueOf(String.valueOf(table[t]));
+										countTotal[t] = countTotal[t]==null?0:countTotal[t];
+										countTotal[t] = Integer.parseInt(String.valueOf(countTotal[t]))+result;
+									}else if(table[t] instanceof Double){
+										double result = Double.valueOf(String.valueOf(table[t]));
+										countTotal[t] = countTotal[t]==null?0:countTotal[t];
+										countTotal[t] = Double.parseDouble(String.valueOf(countTotal[t]))+result;
+									}else{
+										countTotal[t] = "";
+									}
+								}
 								value = table[t] == null ? "" : String.valueOf(table[t]);
 								label = new jxl.write.Label(t, c + beginRow, value, wcfmtContent);
 								ws.addCell(label);
 								label = null;
+								
 							}
 						} else {
 							value = table[t] == null ? "" : String.valueOf(table[t]);
@@ -531,31 +513,32 @@ public class ExcelUtil {
 							label = null;
 						}
 					}
-//					Object[] table = (Object[]) exportDto.getList().get(c);
-//					for (int i = 0, j = 0; i < exportDto.getHeadsList().size()-merges+1; i++) {
-//						if (exportDto.getHasNo()){
-//							if (i == 0) {
-//								value = String.valueOf(c + 1);
-//								label = new jxl.write.Label(i, c + exportDto.getBeginRow(), value, wcfmtContent);
-//								ws.addCell(label);
-//								label = null;
-//							}
-//						} else {
-//							value = table[j] == null ? "" : String.valueOf(table[j]);
-//							label = new jxl.write.Label(i, c + exportDto.getBeginRow(), value, wcfmtContent);
-//							ws.addCell(label);
-//							j++;
-//							label = null;
-//						}
-//					}
+					
 				}
+				//需要合计
+				if(exportDto.isNeedTotal()){
+					countTotal[0] = "合计";
+					for (int i = 0; i < countTotal.length; i++) {
+						value = countTotal[i] == null ? "" : String.valueOf(countTotal[i]);
+						if(countTotal[i] instanceof Double){
+							DecimalFormat dataformat = new DecimalFormat("0.00");
+							value = dataformat.format(countTotal[i]);
+						}
+						label = new jxl.write.Label(i,exportDto.getDataList().size()-1 + beginRow + 1, value, wcfmtContent);
+						ws.addCell(label);
+						label = null;
+					}
+				}
+				
 			}
 			workbook.write();
 			ws = null;
 			exportDto.setDataList(null);
 		} catch (IOException e) {
+			e.printStackTrace();
 			log.error("异常信息：", e);
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error("异常信息：", e);
 		} finally {
 			try {

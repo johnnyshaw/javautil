@@ -418,6 +418,26 @@ public class ExportDto {
 		}
 		
 		/**
+		 * 初始化 
+		 * @param headName 表头标题的每个列名称
+		 * @param headWidth 表头标题的每个列宽度
+		 * @param hasHeadMerge 需要合并行和列
+		 * @param headColNum 需要合并的列
+		 * @param headRowNum 需要合并的行
+		 * @param headColNum 需要合并至某列
+		 * @param headRowNum 需要合并至某行
+		 */
+		public ExportHeads(String headName,int headWidth,boolean hasHeadMerge,int headColNum, int headRowNum,int mergeColNum,int mergeRowNum){
+			this.headName = headName;
+			this.headWidth = headWidth;
+			this.hasHeadMerge = hasHeadMerge;
+			this.headColNum = headColNum;
+			this.headRowNum = headRowNum;
+			this.mergeColNum = mergeColNum;
+			this.mergeRowNum = mergeRowNum;
+		}
+		
+		/**
 		 * 初始化表格头部
 		 * 默认头部行高1000,,默认不需要跨行跨列
 		 * @param headName 头部名称
@@ -482,6 +502,16 @@ public class ExportDto {
 		 * 需要跨行或列
 		 */
 		private boolean hasHeadMerge;
+		
+		/**
+		 * 表头标题需要合并到的列号
+		 */
+		private int mergeColNum;
+		
+		/**
+		 * 表头标题需要合并到的行号
+		 */
+		private int mergeRowNum;
 		
 		/**
 		 * 表头标题的每个列名称
@@ -554,6 +584,22 @@ public class ExportDto {
 		public void setHeadRowHeight(int headRowHeight) {
 			this.headRowHeight = headRowHeight;
 		}
+
+		public int getMergeColNum() {
+			return mergeColNum;
+		}
+
+		public void setMergeColNum(int mergeColNum) {
+			this.mergeColNum = mergeColNum;
+		}
+
+		public int getMergeRowNum() {
+			return mergeRowNum;
+		}
+
+		public void setMergeRowNum(int mergeRowNum) {
+			this.mergeRowNum = mergeRowNum;
+		}
 		
 	}
 	
@@ -608,7 +654,12 @@ public class ExportDto {
 	 * key:字段名称,value:类型
 	 */
 	private Map<String,Map<ExportDataType,Object>> specialColMap;
-
+	
+	/**
+	 * 数据是否需要合计
+	 */
+	private boolean needTotal = true;
+	
 	public List<?> getDataList() {
 		return dataList;
 	}
@@ -679,6 +730,14 @@ public class ExportDto {
 
 	public void setTitleList(List<ExportTitle> titleList) {
 		this.titleList = titleList;
+	}
+
+	public boolean isNeedTotal() {
+		return needTotal;
+	}
+
+	public void setNeedTotal(boolean needTotal) {
+		this.needTotal = needTotal;
 	}
 	
 }
