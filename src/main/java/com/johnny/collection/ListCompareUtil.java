@@ -2,6 +2,8 @@ package com.johnny.collection;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,6 +11,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 
+ * 集合比较
+ * date: 2016年10月13日 下午7:29:19
+ * @author xiaobao
+ */
 public class ListCompareUtil {
 	
 	public static void main(String [] args){
@@ -96,4 +104,34 @@ public class ListCompareUtil {
 			
 		}
 	}
+	
+	/**
+	 * 
+	 * 排序List<Object>.
+	 * date: 2016-7-13 下午2:44:58
+	 * @author xiaobao
+	 * @param list 集合
+	 * @param orderKey 排序字段
+	 * @param sortStr 排序方式，如果为空，默认倒序
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static List<Object> sortMap(List<Object> list,final String orderKey,String sortStr) {
+		final String tempSortStr = sortStr == "" ? "desc":sortStr;
+		if(list != null && list.size()>0){
+			Collections.sort(list, new Comparator<Object>() {
+				public int compare(Object o1, Object o2) {
+					Map<String,Object> map1 = (Map<String,Object>)o1;
+					Map<String,Object> map2 = (Map<String,Object>)o2;
+					double map1value = (Double) map1.get(orderKey);
+					double map2value = (Double) map2.get(orderKey);
+					if("desc".equals(tempSortStr))
+						return map1value > map2value ? -1 : 1;
+					else
+						return map1value < map2value ? -1 : 1;
+				}
+			});
+		}
+        return list;  
+    }  
 }
